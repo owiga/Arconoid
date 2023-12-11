@@ -9,6 +9,7 @@ class Ball(pygame.Rect):
     def __init__(self, game):
         self.game = game  # get main.py
         self.ingame = True
+        self.win = False
         self.font = pygame.font.SysFont("ArialBlack", 50)
         self.text = self.font.render("GG, U LOST", True, "red")
         self.scale = (5, 5)
@@ -22,18 +23,25 @@ class Ball(pygame.Rect):
     def draw(self):
         if self.ingame:
             pygame.draw.circle(self.game.screen, ball_color, self.position, self.scale[0], 5)  # circle
-        else:
+        elif not self.win:
+            text_x = width // 2 - self.text.get_width() // 2  # text "gg"
+            text_y = height // 2 - self.text.get_height() // 2
+            self.game.screen.blit(self.text, (text_x, text_y))
+        elif self.win:
+            self.text = self.font.render("You win!", True, "red")
             text_x = width // 2 - self.text.get_width() // 2  # text "gg"
             text_y = height // 2 - self.text.get_height() // 2
             self.game.screen.blit(self.text, (text_x, text_y))
 
     def _move(self):  # default move
         if self.ingame:
+            self.hitbox[0] += self.speed * self.direction[0]
+            self.hitbox[1] += self.speed * self.direction[1]
             self.position[0] += self.speed * self.direction[0]
             self.position[1] += self.speed * self.direction[1]
 
     def get_rect(self):  # get hitbox
-        return pygame.Rect(self.position, self.scale)
+        return pygame.Rect(self.hitbox, self.hitbox_scale)
 
     def _update(self):  # just update
         self._move()

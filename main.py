@@ -18,6 +18,7 @@ class Game:
         pygame.init()
         self.stepY = 0
         self.stepX = 0
+        self.vBlocks = 0
         self.screen = pygame.display.set_mode(resolution)
         self.clock = pygame.time.Clock()
         self.entity()
@@ -31,6 +32,7 @@ class Game:
             if text == 'a':
                 self.blocks.append(Block(self, (5 + 75 * self.stepX, 5 + self.stepY), (65, 30), True))
                 self.stepX += 1
+                self.vBlocks += 1
             elif text == '_':
                 self.blocks.append(Block(self, (5 + 75 * self.stepX, 5 + self.stepY), (65, 30), False))
                 self.stepX += 1
@@ -42,14 +44,18 @@ class Game:
         for block in self.blocks:
             block.draw()
             if self.ball.get_rect().colliderect(block) and block.Visibility:
-                if self.ball.position[0] < block.left or self.ball.position[0] > block.right:
+                if (self.ball.position[0] <= block.left and self.ball.position[0] <= block.right) or (self.ball.position[0] >= block.left and self.ball.position[0] >= block.right):
                     self.ball.direction[0] *= -1
                     self.blocks.remove(block)
+                    self.vBlocks -= 1
                 else:
                     self.ball.direction[1] *= -1
                     self.blocks.remove(block)
+                    self.vBlocks -= 1
         pygame.display.set_caption(f'{self.clock.get_fps(): .1f}')
         self.ball._update()  # ball below cuz it would superimposed on the top  blocks
+        if self.vBlocks == 0:
+            self.win_event()
 
     def check_collide(self):
         if self.ball.position[0] - self.ball.scale[0] < 1:  # wall collide
@@ -79,6 +85,12 @@ class Game:
             pygame.time.set_timer(self.newGameEvent, newGame_cooldown)
             self.ball.position[1] = 0
 
+    def win_event(self):
+        self.ball.win = True
+        self.ball.ingame = False
+        pygame.time.set_timer(self.newGameEvent, newGame_cooldown)
+        self.vBlocks += 1
+
     def run(self):  # main loop
         while True:
             self.check_lose()
@@ -90,6 +102,7 @@ class Game:
         self.blocks = []
         self.stepY = 0
         self.stepX = 0
+        self.vBlocks = 0
         self.screen = pygame.display.set_mode(resolution)
         self.clock = pygame.time.Clock()
         self.entity()
